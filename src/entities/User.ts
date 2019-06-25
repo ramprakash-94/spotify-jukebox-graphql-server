@@ -1,13 +1,16 @@
-import { Entity, PrimaryGeneratedColumn, Column, BaseEntity, OneToMany } from 'typeorm'
+import { Entity, PrimaryGeneratedColumn, Column, BaseEntity, OneToMany, PrimaryColumn } from 'typeorm'
 import {Room} from './Room'
 
 @Entity()
 export class User extends BaseEntity {
-  @PrimaryGeneratedColumn("uuid")
+  @PrimaryColumn()
   id: string
 
   @Column()
-  userType: string
+  email: string
+
+  @Column()
+  token: string
 
   @OneToMany(type => Room, room => room.admin)
   rooms: Room[]
