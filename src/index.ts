@@ -19,15 +19,21 @@ const typeDefs = `
     id: ID!
     number: Int!
     admin: User!
+    currentTrack: Track!
+    position: Int!
+    duration: Int!
+    playing: Boolean!
     playlists: [Playlist!]!
   }
   type Track{
     id: ID!
+    uri: String!
     title: String!
     artist: String!
     album: String!
     albumArt: String!
     playlists: [Playlist!]!
+    user: User!
   }
   type Playlist{
     id: ID!
@@ -49,6 +55,7 @@ const typeDefs = `
     insertTrack(playlistId: ID!, track: String!, token: String!): Playlist
     popTrack(playlistId: ID!): Playlist
     spotifyAuth(code: String!): User 
+    updateRoom(num: Int!, track: String!, position: Int!, duration: Int!, playing: Boolean!, token: String!): Room!
   }
 `;
 
@@ -61,15 +68,15 @@ const resolvers = {
     },
     room: async(_, { num }) => {
       let roomItem = await getRepository(Room).find({ where:{ number: num, }, 
-        join:{
-          alias: "room",
-          leftJoinAndSelect:{
-            "admin": "room.admin",
-            "playlists": "room.playlists",
-            "tracks": "playlists.tracks"
-          },
-        },
-          relations: ["admin", "playlists"]
+        // join:{
+        //   alias: "room",
+        //   leftJoinAndSelect:{
+        //     "admin": "room.admin",
+        //     "playlists": "room.playlists",
+        //     "tracks": "playlists.tracks"
+        //   },
+        // },
+          relations: ["admin", "playlists", "currentTrack"]
        })
       return roomItem[0]
       
@@ -119,6 +126,10 @@ const resolvers = {
       const room = new Room()
       console.log(user)
       room.admin = user // Set Admin
+      room.currentTrack = null
+      room.duration = 1500
+      room.position = 0
+      room.playing = false
 
       // Create Spotify playlist
       // const {playlistId, playlistURI} = await createPlaylist(user.token, user.id, room.number)
@@ -151,8 +162,50 @@ const resolvers = {
       return playlist
 
     },
+    updateRoom: async(_, {num, track, position, duration, playing, token}) => {
+      console.log(num)
+      console.log(track)
+      console.log(position)
+      console.log(duration)
+      console.log(playing)
+      console.log(token)
+      let rooms = await getRepository(Room).find({ where:{ number: num, }, 
+        // join:{
+        //   alias: "room",
+        //   leftJoinAndSelect:{
+        //     "admin": "room.admin",
+        //     "playlists": "room.playlists",
+        //     "tracks": "playlist.tracks"
+        //   },
+        // },
+          relations: ["admin", "currentTrack", "playlists", "playlists.tracks"]
+       })
+       let room = rooms[0]
+
+      const existingTrack = room.currentTrack
+      if ( existingTrack === null || (existingTrack !== null && existingTrack.id !== track)){
+        const trackInfo = await getTrackInformation(track, token)
+        const trackObj = new Track()
+        trackObj.uri = track
+        trackObj.title = trackInfo.title
+        trackObj.album = trackInfo.album
+        trackObj.artist = trackInfo.artist
+        trackObj.albumArt = trackInfo.albumArt
+        await getRepository(Track).save(trackObj)
+
+        room.currentTrack = trackObj
+      }
+
+      room.position = parseInt(position) 
+      room.duration = parseInt(duration)
+      room.playing = playing
+      return getRepository(Room).save(room)
+    },
     insertTrack: async(_, {playlistId, track, token}) => {
       // const playlist = await Playlist.findOne(playlistId)
+      console.log(playlistId)
+      console.log(track)
+      console.log(token)
       const playlists = await Playlist.find({
         where:{
           id: playlistId
@@ -167,7 +220,7 @@ const resolvers = {
 
       const trackInfo = await getTrackInformation(track, token)
       const trackObj = new Track()
-      trackObj.id = track
+      trackObj.uri = track
       trackObj.title = trackInfo.title
       trackObj.album = trackInfo.album
       trackObj.artist = trackInfo.artist
@@ -276,6 +329,8 @@ async function getSpotifyTokens(code){
 async function getTrackInformation(trackURI, token){
 
   let title, album, artist, albumArt = null
+  console.log(trackURI)
+  console.log(token)
   const trackId = trackURI.replace("spotify:track:", "");
   await fetch(`https://api.spotify.com/v1/tracks/${trackId}`, {
     method: "GET",

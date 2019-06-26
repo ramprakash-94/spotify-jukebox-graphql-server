@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, BaseEntity, OneToMany, Generated, ManyToOne, ManyToMany, JoinTable, OneToOne } from 'typeorm'
+import { Entity, PrimaryGeneratedColumn, Column, BaseEntity, OneToMany, Generated, ManyToOne, ManyToMany, JoinTable, OneToOne, JoinColumn } from 'typeorm'
 import {User} from './User'
 import { Playlist } from './Playlist';
 import { Track } from './Track';
@@ -16,7 +16,17 @@ export class Room extends BaseEntity {
   admin: User 
 
   @OneToOne(type => Track)
+  @JoinColumn()
   currentTrack: Track
+
+  @Column("integer")
+  position: number
+
+  @Column("integer")
+  duration: number
+
+  @Column()
+  playing: Boolean
 
   @ManyToMany(type => Playlist, playlist => playlist.rooms)
   @JoinTable()
