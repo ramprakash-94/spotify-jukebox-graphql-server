@@ -6,8 +6,9 @@ import { createBrotliCompress } from 'zlib';
 import { Playlist } from './entities/Playlist';
 import { Track } from './entities/Track';
 
-const mode = "dev"
+let mode = "prod"
 let redirect_uri = null
+
 if (mode === "dev"){
   redirect_uri = "http://localhost:3000/spotify-auth"
 }
