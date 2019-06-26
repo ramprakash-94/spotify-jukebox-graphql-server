@@ -1,6 +1,6 @@
 {
     "type": "postgres",
-    "host": "postgres://cvufcwajlxpjdb:d3690205a6d9223ea8002824a9c1249c80423a8853ab7d1dcd6d42178280b028@ec2-54-221-215-228.compute-1.amazonaws.com:5432/dv2hecthrutiv",
+    "host": "127.0.0.1",
     "port": 5432,
     "database": "graphqldb",
     "synchronize": true,

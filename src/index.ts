@@ -6,6 +6,15 @@ import { createBrotliCompress } from 'zlib';
 import { Playlist } from './entities/Playlist';
 import { Track } from './entities/Track';
 
+const mode = "dev"
+let redirect_uri = null
+if (mode === "dev"){
+  redirect_uri = "http://localhost:3000/spotify-auth"
+}
+else if (mode === "prod"){
+  redirect_uri = "http://web-jukebox.herokuapp.com/spotify-auth"
+}
+
 const fetch = require('node-fetch')
 
 const typeDefs = `
@@ -296,7 +305,7 @@ async function getSpotifyTokens(code){
     const body = {
       "grant_type": "authorization_code",
       "code": code,
-      "redirect_uri": "http://localhost:3000/spotify-auth",
+      "redirect_uri": redirect_uri,
       "client_id": "91b73766037a44e7a855d5cf2b0c8768",
       "client_secret": "57aec0bb5666401495117560bd5a6c3f"
     }
