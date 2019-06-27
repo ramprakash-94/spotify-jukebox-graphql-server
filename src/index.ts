@@ -15,7 +15,7 @@ if (mode === "dev"){
   redirect_uri = "http://10.0.0.241:3000/spotify-auth"
 }
 else if (mode === "prod"){
-  redirect_uri = "http://web-jukebox.herokuapp.com/spotify-auth"
+  redirect_uri = "https://web-jukebox.herokuapp.com/spotify-auth"
 }
 
 const fetch = require('node-fetch')
