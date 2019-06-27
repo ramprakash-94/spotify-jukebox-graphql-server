@@ -6,11 +6,12 @@ import { createBrotliCompress } from 'zlib';
 import { Playlist } from './entities/Playlist';
 import { Track } from './entities/Track';
 
-let mode = "prod"
+let mode = "dev"
 let redirect_uri = null
 
 if (mode === "dev"){
-  redirect_uri = "http://localhost:3000/spotify-auth"
+  // redirect_uri = "http://localhost:3000/spotify-auth"
+  redirect_uri = "http://10.0.0.241:3000/spotify-auth"
 }
 else if (mode === "prod"){
   redirect_uri = "http://web-jukebox.herokuapp.com/spotify-auth"
