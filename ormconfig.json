@@ -6,6 +6,6 @@
     "synchronize": true,
     "logging": true,
     "entities": ["src/entities/**/*.ts"],
-    "user": "cvufcwajlxpjdb",
+    "username": "cvufcwajlxpjdb",
     "password": "d3690205a6d9223ea8002824a9c1249c80423a8853ab7d1dcd6d42178280b028"
   }
