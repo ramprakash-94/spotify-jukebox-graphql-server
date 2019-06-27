@@ -259,7 +259,7 @@ const resolvers = {
 }
 
 const server = new GraphQLServer({ typeDefs, resolvers })
-server.express.use("/public", express.static("public"))
+server.express.use("/.well-known/acme-challenge", express.static("static"))
 
 createConnection().then(() => {
   server.start(() => console.log("Server is running on localhost:5432"));
