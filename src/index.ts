@@ -5,6 +5,7 @@ import { Room } from './entities/Room';
 import { createBrotliCompress } from 'zlib';
 import { Playlist } from './entities/Playlist';
 import { Track } from './entities/Track';
+const express = require('express')
 
 let mode = "dev"
 let redirect_uri = null
@@ -258,6 +259,7 @@ const resolvers = {
 }
 
 const server = new GraphQLServer({ typeDefs, resolvers })
+server.express.use("/public", express.static("public"))
 
 createConnection().then(() => {
   server.start(() => console.log("Server is running on localhost:5432"));
