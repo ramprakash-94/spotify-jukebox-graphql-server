@@ -1,4 +1,14 @@
-{
+// module.exports = {
+//     "type": "postgres",
+//     "host": "localhost",
+//     "port": 5432,
+//     "database": "graphqldb",
+//     "synchronize": true,
+//     "logging": true,
+//     "entities": ["src/entities/**/*.ts"]
+// }
+
+module.exports = {
     "type": "postgres",
     "host": "ec2-54-221-215-228.compute-1.amazonaws.com",
     "port": 5432,
