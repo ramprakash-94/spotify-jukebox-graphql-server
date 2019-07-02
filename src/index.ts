@@ -7,7 +7,7 @@ import { Playlist } from './entities/Playlist';
 import { Track } from './entities/Track';
 const express = require('express')
 
-let mode = "prod"
+let mode = "dev"
 let redirect_uri = null
 
 if (mode === "dev"){
@@ -59,6 +59,7 @@ const typeDefs = `
     users(ids: [ID!]): [User!]!
     allUsers(limit: Int): [User!]!
     allRooms(limit: Int): [Room!]!
+    rooms(id: String!): [Room!]!
     allTracksInPlaylist(id: ID!): Playlist
   }
   type Mutation {
@@ -75,8 +76,13 @@ const resolvers = {
   Query: {
     hello: (_, { name }) => `Hello ${name || 'World'}`,
     // this is the user resolver
-    user: (_, { id }) => {
-      return getRepository(User).findOne(id)
+    user: async(_, { id }) => {
+      const users = await getRepository(User).find({
+        where:{
+          id: id
+        }
+      })
+      return users[0]
     },
     room: async(_, { num }) => {
       let roomItem = await getRepository(Room).find({ where:{ number: num, }, 
@@ -88,7 +94,7 @@ const resolvers = {
         //     "tracks": "playlists.tracks"
         //   },
         // },
-          relations: ["admin", "playlists", "currentTrack"]
+          relations: ["playlists"]
        })
       return roomItem[0]
       
@@ -105,8 +111,16 @@ const resolvers = {
     allRooms: (_, {limit}) => {
       return getRepository(Room).find({
         take: limit, 
-        relations: ["admin", "playlists"]
+        relations: ["playlists"]
       })
+    },
+    rooms: (_, {id}) => {
+      return getRepository(Room).find({
+        where:{
+          admin: id
+        }
+      })
+
     },
     allTracksInPlaylist: async(_, {id}) => {
       const playlists =  await Playlist.find({
@@ -125,19 +139,23 @@ const resolvers = {
     addUser: (_, {token, type}) => {
       const user = new User()
       user.token = token
-      user.rooms = []
       return getRepository(User).save(user)
     },
 
     createRoom: async(_, {userId}) => {
-      const user = await User.findOne(userId)
-      if (!user) {
+      let users = await getRepository(User).find({
+        where:{
+          id: userId
+        }
+      })
+      if (!users) {
         throw new Error(`Couldn’t find user with id ${userId}`);
       }
+      let user = users[0]
       // New Room
       const room = new Room()
       console.log(user)
-      room.admin = user // Set Admin
+      room.admin = user["id"] // Set Admin
       room.currentTrack = null
       room.duration = 1500
       room.position = 0
@@ -190,22 +208,34 @@ const resolvers = {
         //     "tracks": "playlist.tracks"
         //   },
         // },
-          relations: ["admin", "currentTrack", "playlists", "playlists.tracks"]
+          relations: ["playlists", "playlists.tracks"]
        })
        let room = rooms[0]
 
       const existingTrack = room.currentTrack
-      if ( existingTrack === null || (existingTrack !== null && existingTrack.id !== track)){
-        const trackInfo = await getTrackInformation(track, token)
-        const trackObj = new Track()
-        trackObj.uri = track
-        trackObj.title = trackInfo.title
-        trackObj.album = trackInfo.album
-        trackObj.artist = trackInfo.artist
-        trackObj.albumArt = trackInfo.albumArt
-        await getRepository(Track).save(trackObj)
+      if (existingTrack != track){
+        let tracks = await getRepository(Track).find({
+          where:{
+            uri: track
+          }
+        })
+        console.log(tracks)
+        let trackObj = null
+        if (tracks.length === 0){
+          const trackInfo = await getTrackInformation(track, token)
+          trackObj = new Track()
+          trackObj.uri = track
+          trackObj.title = trackInfo.title
+          trackObj.album = trackInfo.album
+          trackObj.artist = trackInfo.artist
+          trackObj.albumArt = trackInfo.albumArt
+          await getRepository(Track).save(trackObj)
 
-        room.currentTrack = trackObj
+        }
+        else{
+          trackObj = tracks[0]
+        }
+          room.currentTrack = trackObj["uri"]
       }
 
       room.position = parseInt(position) 
@@ -230,14 +260,25 @@ const resolvers = {
         throw new Error(`Couldn’t find playlist with id ${playlistId}`);
       }
 
-      const trackInfo = await getTrackInformation(track, token)
-      const trackObj = new Track()
-      trackObj.uri = track
-      trackObj.title = trackInfo.title
-      trackObj.album = trackInfo.album
-      trackObj.artist = trackInfo.artist
-      trackObj.albumArt = trackInfo.albumArt
-      await getRepository(Track).save(trackObj)
+      let existingTracks = await getRepository(Track).find({
+        where:{
+          uri: track
+        }
+      })
+      let trackObj = null
+      if (existingTracks.length == 0){
+        const trackInfo = await getTrackInformation(track, token)
+        trackObj = new Track()
+        trackObj.uri = track
+        trackObj.title = trackInfo.title
+        trackObj.album = trackInfo.album
+        trackObj.artist = trackInfo.artist
+        trackObj.albumArt = trackInfo.albumArt
+        await getRepository(Track).save(trackObj)
+      }
+      else{
+        trackObj = existingTracks[0]
+      }
 
       let tracks = playlist.tracks
       console.log(tracks)
@@ -277,7 +318,6 @@ async function manageUserTokens(token){
     user.id = userData["id"]
     user.email = userData["email"]
     user.token = tokenData["access_token"]
-    user.rooms = []
     return getRepository(User).save(user)
   }
   return null

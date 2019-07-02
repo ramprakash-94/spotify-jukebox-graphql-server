@@ -12,6 +12,4 @@ export class User extends BaseEntity {
   @Column()
   token: string
 
-  @OneToMany(type => Room, room => room.admin)
-  rooms: Room[]
 }

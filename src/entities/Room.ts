@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, BaseEntity, OneToMany, Generated, ManyToOne, ManyToMany, JoinTable, OneToOne, JoinColumn } from 'typeorm'
+import { Entity, PrimaryGeneratedColumn, Column, BaseEntity, OneToMany, Generated, ManyToOne, ManyToMany, JoinTable, OneToOne, JoinColumn, Index } from 'typeorm'
 import {User} from './User'
 import { Playlist } from './Playlist';
 import { Track } from './Track';
@@ -12,12 +12,12 @@ export class Room extends BaseEntity {
   @Generated("increment")
   number: number
 
-  @ManyToOne(type => User, user => user.rooms)
-  admin: User 
+  @Index()
+  @Column()
+  admin: String 
 
-  @OneToOne(type => Track)
-  @JoinColumn()
-  currentTrack: Track
+  @Column({nullable: true})
+  currentTrack: String
 
   @Column("integer")
   position: number

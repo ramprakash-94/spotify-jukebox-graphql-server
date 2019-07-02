@@ -1,5 +1,5 @@
 
-import { Entity, PrimaryGeneratedColumn, Column, BaseEntity, OneToMany, Generated, ManyToOne, ManyToMany, JoinTable, PrimaryColumn, OneToOne,JoinColumn } from 'typeorm'
+import { Entity, PrimaryGeneratedColumn, Column, BaseEntity, OneToMany, Generated, ManyToOne, ManyToMany, JoinTable, PrimaryColumn, OneToOne,JoinColumn, Index } from 'typeorm'
 import {User} from './User'
 import { Playlist } from './Playlist';
 
@@ -8,6 +8,7 @@ export class Track extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number
 
+  @Index()
   @Column()
   uri: string
 
