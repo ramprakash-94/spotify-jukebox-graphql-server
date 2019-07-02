@@ -30,8 +30,8 @@ const typeDefs = `
   type Room{
     id: ID!
     number: Int!
-    admin: User!
-    currentTrack: Track!
+    admin: String!
+    currentTrack: String
     position: Int!
     duration: Int!
     playing: Boolean!
@@ -64,7 +64,7 @@ const typeDefs = `
   }
   type Mutation {
     addUser(token: String!, type: String!): User
-    createRoom(userId: ID!): Room
+    createRoom(userId: ID!): [Room!]!
     insertTrack(playlistId: ID!, track: String!, token: String!): Playlist
     popTrack(playlistId: ID!): Playlist
     spotifyAuth(code: String!): User 
@@ -151,6 +151,15 @@ const resolvers = {
       if (!users) {
         throw new Error(`Couldn’t find user with id ${userId}`);
       }
+      let existingRooms = await getRepository(Room).find({
+                            where:{
+                              admin: userId
+                            },
+                            relations: ["playlists"]
+                          })
+      if (existingRooms.length >= 5){
+        throw new Error(`Too many rooms`)
+      }
       let user = users[0]
       // New Room
       const room = new Room()
@@ -171,7 +180,12 @@ const resolvers = {
       const roomPlaylists = [playlist]
       room.playlists = roomPlaylists
       await getRepository(Room).save(room)
-      return room
+      return getRepository(Room).find({
+        where:{
+          admin: userId
+        },
+        relations: ["playlists"]
+      })
     },
     spotifyAuth: async(_, {code}) => {
       let user = await manageUserTokens(code)
