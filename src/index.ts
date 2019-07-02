@@ -7,7 +7,7 @@ import { Playlist } from './entities/Playlist';
 import { Track } from './entities/Track';
 const express = require('express')
 
-let mode = "dev"
+let mode = "prod"
 let redirect_uri = null
 
 if (mode === "dev"){
