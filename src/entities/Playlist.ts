@@ -7,6 +7,9 @@ export class Playlist extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number
 
+  @Column({default: 0})
+  nowPlaying: number
+
   @ManyToMany(type => Room, room => room.playlists)
   rooms: Room[] 
 

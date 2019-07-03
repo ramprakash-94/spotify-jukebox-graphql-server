@@ -49,6 +49,7 @@ const typeDefs = `
   }
   type Playlist{
     id: ID!
+    nowPlaying: Int!
     rooms: [Room!]!
     tracks: [Track!]!
   }
@@ -199,9 +200,12 @@ const resolvers = {
         relations: ["tracks"]
       })
       const playlist = playlists[0]
-      let tracks = playlist.tracks
-      tracks.shift()
-      playlist.tracks = tracks
+
+      let nextTrack = playlist.nowPlaying + 1
+      if (playlist.nowPlaying >= playlist.tracks.length-1){
+        nextTrack = 0
+      }
+      playlist.nowPlaying = nextTrack
       await getRepository(Playlist).save(playlist)
       return playlist
 
