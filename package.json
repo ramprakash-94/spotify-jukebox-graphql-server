@@ -16,7 +16,7 @@
     "express": "^4.17.1",
     "form-data": "^2.4.0",
     "graphql-yoga": "^1.17.4",
-    "node-fetch": "^2.6.0",
+    "node-fetch": "^2.6.7",
     "nodemon": "^1.19.0",
     "pg": "^7.11.0",
     "reflect-metadata": "^0.1.13",
